@@ -1,4 +1,4 @@
-CREATE TABLE Persons (
+CREATE TABLE project_csci620.bank_data_set (
     record_id int primary key,
     age int,
     job varchar(255),
