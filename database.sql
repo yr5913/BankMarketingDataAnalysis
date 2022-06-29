@@ -1,3 +1,7 @@
+
+
+#drop table project_csci620.bank_data_set;
+
 CREATE TABLE project_csci620.bank_data_set (
     record_id int primary key,
     age int,
@@ -15,7 +19,7 @@ CREATE TABLE project_csci620.bank_data_set (
     campaign int,
     pdays int, 
     previous int,
-    pourcome varchar(255),
+    poutcome varchar(255),
     outcome boolean
     
 );
