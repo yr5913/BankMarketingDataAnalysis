@@ -152,17 +152,17 @@ def descriptive_stats_analysis(data):
     lower_quart_outliers, upper_quart_outliers = ouliers_in_data_frame(data)
     print("The outliers values in Lower Quartile are ", "\n", lower_quart_outliers)
     print("The outliers values in Upper Quartile are ", "\n", upper_quart_outliers)
-    # axis_index = 0
-    # fig, axes = plt.subplots(7, 1, figsize=(8, 25))
-    # for column in numeric_columns:
-    #     print_outliers(upper_quart_outliers, lower_quart_outliers, data, column)
-    #     f = data[[column]].boxplot(ax=axes[axis_index], vert=False)
-    #     axis_index += 1
-    # plt.show()
-    # #     seaborn.pairplot(data, hue='y', corner = True)
-    # #     target_variable_numerical_features_graph(numeric_columns, data)
-    # # kernel_denstiy_estimation(numeric_columns, data)
-    # #     count_based_on_categorical_features(data, categorical_columns)
+    axis_index = 0
+    fig, axes = plt.subplots(7, 1, figsize=(8, 25))
+    for column in numeric_columns:
+        print_outliers(upper_quart_outliers, lower_quart_outliers, data, column)
+        f = data[[column]].boxplot(ax=axes[axis_index], vert=False)
+        axis_index += 1
+    plt.show()
+    seaborn.pairplot(data, hue='y', corner=True)
+    target_variable_numerical_features_graph(numeric_columns, data)
+    kernel_denstiy_estimation(numeric_columns, data)
+    count_based_on_categorical_features(data, categorical_columns)
     return numeric_columns, categorical_columns, data
 
 
@@ -192,17 +192,17 @@ def count_based_on_categorical_features(data, categorical_columns):
 
 
 def kernel_denstiy_estimation(numeric_columns, data):
-    fig, axes = plt.subplots(3, 1, figsize=(8, 25))
-    for index, column in enumerate(numeric_columns):
-        if index == 3:
-            break
-        f = data[[column]].plot(kind='kde', ax=axes[index])
-    plt.show()
+    # fig, axes = plt.subplots(3, 1, figsize=(8, 25))
+    # for index, column in enumerate(numeric_columns):
+    #     if index == 3:
+    #         break
+    #     f = data[[column]].plot(kind='kde', ax=axes[index])
+    # plt.show()
 
-    fig, axes = plt.subplots(3, 1, figsize=(8, 25))
+    fig, axes = plt.subplots(7, 1, figsize=(8, 25))
     for index, column in enumerate(numeric_columns):
-        if index > 3:
-            f = data[[column]].plot(kind='kde', ax=axes[index - 4])
+        # if index > 3:
+        f = data[[column]].plot(kind='kde', ax=axes[index - 4])
     plt.show()
 
 
