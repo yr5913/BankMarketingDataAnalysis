@@ -3,10 +3,10 @@ import numpy
 import pandas
 import seaborn
 from matplotlib import pyplot as plt
+from sklearn import metrics
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import  confusion_matrix, ConfusionMatrixDisplay
-from sklearn import metrics
 
 config = {
     'user': 'root',
@@ -108,6 +108,9 @@ def split_the_data(data, numeric_columns):
     train_decision_tree_classifier(x_train, x_test, y_train, y_test)
     train_logistic_regression(x_train, x_test, y_train, y_test)
     train_k_neighbors_classifier(x_train, x_test, y_train, y_test)
+    train_gaussianNB(x_train, x_test, y_train, y_test)
+    train_random_forest_classifier(x_train, x_test, y_train, y_test)
+
 
 def train_decision_tree_classifier(x_train, x_test, y_train, y_test):
     from sklearn.tree import DecisionTreeClassifier
@@ -174,6 +177,51 @@ def train_k_neighbors_classifier(x_train, x_test, y_train, y_test):
     disp.plot()
 
     plt.show()
+
+
+def train_gaussianNB(x_train, x_test, y_train, y_test):
+    from sklearn.naive_bayes import GaussianNB
+
+    gnb_model = GaussianNB()
+    gnb_model.fit(x_train, y_train)
+    y_predicted_gnb = gnb_model.predict(x_test)
+    y_predicted_gnb
+    gnb_model.score(x_test, y_test)
+    gnb_accuracy = metrics.accuracy_score(y_test, y_predicted_gnb)
+    gnb_precision = metrics.precision_score(y_test, y_predicted_gnb)
+    gnb_recall = metrics.recall_score(y_test, y_predicted_gnb)
+    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_gnb))
+    print("Precision:", metrics.precision_score(y_test, y_predicted_gnb))
+    print("Recall:", metrics.recall_score(y_test, y_predicted_gnb))
+
+    cm = confusion_matrix(y_test, y_predicted_gnb)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    disp.plot()
+
+    plt.show()
+
+
+def train_random_forest_classifier(x_train, x_test, y_train, y_test):
+    from sklearn.ensemble import RandomForestClassifier
+
+    rf_model = RandomForestClassifier(n_estimators=10)
+    rf_model.fit(x_train, y_train)
+    y_predicted_rf = rf_model.predict(x_test)
+    y_predicted_rf
+    rf_model.score(x_test, y_test)
+    rf_accuracy = metrics.accuracy_score(y_test, y_predicted_rf)
+    rf_precision = metrics.precision_score(y_test, y_predicted_rf)
+    rf_recall = metrics.recall_score(y_test, y_predicted_rf)
+    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_rf))
+    print("Precision:", metrics.precision_score(y_test, y_predicted_rf))
+    print("Recall:", metrics.recall_score(y_test, y_predicted_rf))
+
+    cm = confusion_matrix(y_test, y_predicted_rf)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    disp.plot()
+
+    plt.show()
+
 
 def ouliers_in_data_frame(data):
     quartile1 = data.quantile(0.25)
