@@ -3,7 +3,10 @@ import numpy
 import pandas
 import seaborn
 from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import  confusion_matrix, ConfusionMatrixDisplay
+from sklearn import metrics
 
 config = {
     'user': 'root',
@@ -86,8 +89,91 @@ def plain_data_process():
     bank_data = readfile("bank-full.csv")
     print(bank_data.describe())
     numeric_columns, categorical_columns, data = descriptive_stats_analysis(bank_data)
-    data_pre_process(numeric_columns, categorical_columns, bank_data)
+    data = data_pre_process(numeric_columns, categorical_columns, bank_data)
+    split_the_data(data, numeric_columns)
 
+
+def split_the_data(data, numeric_columns):
+    features = [feat for feat in data.columns if feat != 'y']
+
+    x = data[numeric_columns]  # feature set
+    y = data['y']  # target
+
+    # Splitting data into train and test
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+
+    # train and test datasets dimensions
+    print(x_train.shape, x_test.shape)
+
+    train_decision_tree_classifier(x_train, x_test, y_train, y_test)
+    train_logistic_regression(x_train, x_test, y_train, y_test)
+    train_k_neighbors_classifier(x_train, x_test, y_train, y_test)
+
+def train_decision_tree_classifier(x_train, x_test, y_train, y_test):
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn import metrics
+
+    deseciontree_model = DecisionTreeClassifier(max_depth=10, random_state=40)
+    deseciontree_model.fit(x_train, y_train)
+    y_predicted_deseciontree = deseciontree_model.predict(x_test)
+    y_predicted_deseciontree
+    deseciontree_model.score(x_test, y_test)
+    dtc_accuracy = metrics.accuracy_score(y_test, y_predicted_deseciontree)
+    dtc_precision = metrics.precision_score(y_test, y_predicted_deseciontree)
+    dtc_recall = metrics.recall_score(y_test, y_predicted_deseciontree)
+    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_deseciontree))
+    print("Precision:", metrics.precision_score(y_test, y_predicted_deseciontree))
+    print("Recall:", metrics.recall_score(y_test, y_predicted_deseciontree))
+
+    cm = confusion_matrix(y_test, y_predicted_deseciontree)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    disp.plot()
+
+    plt.show()
+
+
+def train_logistic_regression(x_train, x_test, y_train, y_test):
+    from sklearn.linear_model import LogisticRegression
+
+    lgr_model = LogisticRegression(C=10, random_state=40)
+    lgr_model.fit(x_train, y_train)
+    y_predicted_lgr = lgr_model.predict(x_test)
+    y_predicted_lgr
+    lgr_model.score(x_test, y_test)
+    lgr_accuracy = metrics.accuracy_score(y_test, y_predicted_lgr)
+    lgr_precision = metrics.precision_score(y_test, y_predicted_lgr)
+    lgr_recall = metrics.recall_score(y_test, y_predicted_lgr)
+    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_lgr))
+    print("Precision:", metrics.precision_score(y_test, y_predicted_lgr))
+    print("Recall:", metrics.recall_score(y_test, y_predicted_lgr))
+
+    cm = confusion_matrix(y_test, y_predicted_lgr)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    disp.plot()
+
+    plt.show()
+
+
+def train_k_neighbors_classifier(x_train, x_test, y_train, y_test):
+    from sklearn.neighbors import KNeighborsClassifier
+
+    KNN_model = KNeighborsClassifier(n_neighbors=5, metric='minkowski', p=2)
+    KNN_model.fit(x_train, y_train)
+    y_predicted_knn = KNN_model.predict(x_test)
+    y_predicted_knn
+    KNN_model.score(x_test, y_test)
+    knn_accuracy = metrics.accuracy_score(y_test, y_predicted_knn)
+    knn_precision = metrics.precision_score(y_test, y_predicted_knn)
+    knn_recall = metrics.recall_score(y_test, y_predicted_knn)
+    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_knn))
+    print("Precision:", metrics.precision_score(y_test, y_predicted_knn))
+    print("Recall:", metrics.recall_score(y_test, y_predicted_knn))
+
+    cm = confusion_matrix(y_test, y_predicted_knn)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    disp.plot()
+
+    plt.show()
 
 def ouliers_in_data_frame(data):
     quartile1 = data.quantile(0.25)
@@ -110,6 +196,7 @@ def data_pre_process(numeric_columns, categorical_columns, data):
     data = encode_data(data)
     print(data)
     data = normalization(data, numeric_columns)
+    return data
 
 
 def normalization(data, numerical_columns):
@@ -154,15 +241,15 @@ def descriptive_stats_analysis(data):
     print("The outliers values in Upper Quartile are ", "\n", upper_quart_outliers)
     axis_index = 0
     fig, axes = plt.subplots(7, 1, figsize=(8, 25))
-    for column in numeric_columns:
-        print_outliers(upper_quart_outliers, lower_quart_outliers, data, column)
-        f = data[[column]].boxplot(ax=axes[axis_index], vert=False)
-        axis_index += 1
-    plt.show()
-    seaborn.pairplot(data, hue='y', corner=True)
-    target_variable_numerical_features_graph(numeric_columns, data)
-    kernel_denstiy_estimation(numeric_columns, data)
-    count_based_on_categorical_features(data, categorical_columns)
+    # for column in numeric_columns:
+    #     print_outliers(upper_quart_outliers, lower_quart_outliers, data, column)
+    #     f = data[[column]].boxplot(ax=axes[axis_index], vert=False)
+    #     axis_index += 1
+    # plt.show()
+    # seaborn.pairplot(data, hue='y', corner=True)
+    # target_variable_numerical_features_graph(numeric_columns, data)
+    # kernel_denstiy_estimation(numeric_columns, data)
+    # count_based_on_categorical_features(data, categorical_columns)
     return numeric_columns, categorical_columns, data
 
 
