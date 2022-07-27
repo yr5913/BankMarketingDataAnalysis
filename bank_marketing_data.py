@@ -90,14 +90,21 @@ def main():
 
 
 def plain_data_process():
+    """process the data set and publishes the results"""
     bank_data = readfile("bank-full.csv")
     print(bank_data.describe())
     numeric_columns, categorical_columns, data = descriptive_stats_analysis(bank_data)
     data = data_pre_process(numeric_columns, categorical_columns, bank_data)
-    split_the_data(data, numeric_columns)
+    train_models(data)
 
 
 def oversample_the_data(x, y):
+    """
+    performs oversampling of data to ensure predicted value has all categories with equal percentages
+    :param x: feature column set
+    :param y: target column set
+    :return: data frame after oversampling is done
+    """
     x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.7, random_state=42)
     smote = SMOTE()
     x_train_os, y_train_os = smote.fit_resample(x_train, y_train)
@@ -108,10 +115,15 @@ def oversample_the_data(x, y):
     return x_train_os, x_test, y_train_os, y_test
 
 
-def split_the_data(data, numeric_columns):
+def train_models(data):
+    """
+    Trains different classification models and posts the results
+    :param data: the data frame which is used for training
+    :return:None
+    """
     features = [feat for feat in data.columns if feat != 'y']
 
-    x = data[numeric_columns]  # feature set
+    x = data[features]  # feature set
     y = data['y']  # target
 
     # Splitting data into train and test
@@ -156,6 +168,14 @@ def split_the_data(data, numeric_columns):
 
 
 def train_stochastic_gradient_descent(x_train, x_test, y_train, y_test):
+    """
+    Training the stochastic gradient descent model
+    :param x_train: the feature data set on which model is trained
+    :param x_test: the feature data set on which model is tested
+    :param y_train: the target data set on which model is tested
+    :param y_test: the target data set on which model is tested
+    :return: a tuple of the model, model accuracy, model precision, model recall, model name
+    """
     from sklearn.linear_model import SGDClassifier
 
     sgd_model = SGDClassifier(loss='modified_huber', shuffle=True, random_state=101)
@@ -173,14 +193,21 @@ def train_stochastic_gradient_descent(x_train, x_test, y_train, y_test):
     cm = confusion_matrix(y_test, y_predicted_sgd)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
-
+    plt.title("StochasticGradient Confusion Matrix")
     plt.show()
     return sgd_model, sgd_accuracy, sgd_precision, sgd_recall, "StochasticGradient"
 
 
 def train_decision_tree_classifier(x_train, x_test, y_train, y_test):
+    """
+    Training the decision tree classifier model
+    :param x_train: the feature data set on which model is trained
+    :param x_test: the feature data set on which model is tested
+    :param y_train: the target data set on which model is tested
+    :param y_test: the target data set on which model is tested
+    :return: a tuple of the model, model accuracy, model precision, model recall, model name
+    """
     from sklearn.tree import DecisionTreeClassifier
-    from sklearn import metrics
 
     deseciontree_model = DecisionTreeClassifier(max_depth=10, random_state=40)
     deseciontree_model.fit(x_train, y_train)
@@ -190,19 +217,27 @@ def train_decision_tree_classifier(x_train, x_test, y_train, y_test):
     dtc_accuracy = metrics.accuracy_score(y_test, y_predicted_deseciontree)
     dtc_precision = metrics.precision_score(y_test, y_predicted_deseciontree)
     dtc_recall = metrics.recall_score(y_test, y_predicted_deseciontree)
-    print("Accuracy of the DescisionTree model:", metrics.accuracy_score(y_test, y_predicted_deseciontree))
-    print("Precision of the DescisionTree model:", metrics.precision_score(y_test, y_predicted_deseciontree))
-    print("Recall of the DescisionTree model:", metrics.recall_score(y_test, y_predicted_deseciontree))
+    print("Accuracy of the DecisionTree model:", metrics.accuracy_score(y_test, y_predicted_deseciontree))
+    print("Precision of the DecisionTree model:", metrics.precision_score(y_test, y_predicted_deseciontree))
+    print("Recall of the DecisionTree model:", metrics.recall_score(y_test, y_predicted_deseciontree))
 
     cm = confusion_matrix(y_test, y_predicted_deseciontree)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
-
+    plt.title("DecisionTree Confusion Matrix")
     plt.show()
-    return deseciontree_model, dtc_accuracy, dtc_precision, dtc_recall, "DescisionTree"
+    return deseciontree_model, dtc_accuracy, dtc_precision, dtc_recall, "DecisionTree"
 
 
 def train_logistic_regression(x_train, x_test, y_train, y_test):
+    """
+    Training the logistic regression model
+    :param x_train: the feature data set on which model is trained
+    :param x_test: the feature data set on which model is tested
+    :param y_train: the target data set on which model is tested
+    :param y_test: the target data set on which model is tested
+    :return: a tuple of the model, model accuracy, model precision, model recall, model name
+    """
     from sklearn.linear_model import LogisticRegression
 
     lgr_model = LogisticRegression(C=10, random_state=40)
@@ -220,12 +255,20 @@ def train_logistic_regression(x_train, x_test, y_train, y_test):
     cm = confusion_matrix(y_test, y_predicted_lgr)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
-
+    plt.title("LogisticRegression Confusion Matrix")
     plt.show()
     return lgr_model, lgr_accuracy, lgr_precision, lgr_recall, "LogisticRegression"
 
 
 def train_k_neighbors_classifier(x_train, x_test, y_train, y_test):
+    """
+    Training the K neighbors classifier model
+    :param x_train: the feature data set on which model is trained
+    :param x_test: the feature data set on which model is tested
+    :param y_train: the target data set on which model is tested
+    :param y_test: the target data set on which model is tested
+    :return: a tuple of the model, model accuracy, model precision, model recall, model name
+    """
     from sklearn.neighbors import KNeighborsClassifier
 
     KNN_model = KNeighborsClassifier(n_neighbors=5, metric='minkowski', p=2)
@@ -243,12 +286,20 @@ def train_k_neighbors_classifier(x_train, x_test, y_train, y_test):
     cm = confusion_matrix(y_test, y_predicted_knn)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
-
+    plt.title("KNeighborsClassifier Confusion Matrix")
     plt.show()
     return KNN_model, knn_accuracy, knn_precision, knn_recall, "KNeighborsClassifier"
 
 
 def train_gaussianNB(x_train, x_test, y_train, y_test):
+    """
+    Training the Gaussian NB model
+    :param x_train: the feature data set on which model is trained
+    :param x_test: the feature data set on which model is tested
+    :param y_train: the target data set on which model is tested
+    :param y_test: the target data set on which model is tested
+    :return: a tuple of the model, model accuracy, model precision, model recall, model name
+    """
     from sklearn.naive_bayes import GaussianNB
 
     gnb_model = GaussianNB()
@@ -266,12 +317,20 @@ def train_gaussianNB(x_train, x_test, y_train, y_test):
     cm = confusion_matrix(y_test, y_predicted_gnb)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
-
+    plt.title("GaussianNB Confusion Matrix")
     plt.show()
     return gnb_model, gnb_accuracy, gnb_precision, gnb_recall, "GaussianNB"
 
 
 def train_random_forest_classifier(x_train, x_test, y_train, y_test):
+    """
+    Training the random forest classifier model
+    :param x_train: the feature data set on which model is trained
+    :param x_test: the feature data set on which model is tested
+    :param y_train: the target data set on which model is tested
+    :param y_test: the target data set on which model is tested
+    :return: a tuple of the model, model accuracy, model precision, model recall, model name
+    """
     from sklearn.ensemble import RandomForestClassifier
 
     rf_model = RandomForestClassifier(n_estimators=10)
@@ -289,12 +348,17 @@ def train_random_forest_classifier(x_train, x_test, y_train, y_test):
     cm = confusion_matrix(y_test, y_predicted_rf)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
-
+    plt.title("RandomForestClassifier Confusion Matrix")
     plt.show()
     return rf_model, rf_accuracy, rf_precision, rf_recall, "RandomForestClassifier"
 
 
 def ouliers_in_data_frame(data):
+    """
+    This method takes the data frame and uses the inter quartile range method to predict the outliers in the datafrmae
+    :param data: the data frame
+    :return: the lower and upper quartile outliers tuple
+    """
     quartile1 = data.quantile(0.25)
     quartile3 = data.quantile(0.75)
     inter_quartile_range = quartile3 - quartile1
@@ -304,6 +368,15 @@ def ouliers_in_data_frame(data):
 
 
 def data_pre_process(numeric_columns, categorical_columns, data):
+    """
+    This method performs pre-processing of data. Steps include
+    1) Data Cleaning
+    2) Data Encoding and Normalization
+    :param numeric_columns:  the numerical columns list in the data frame
+    :param categorical_columns: the categorical columns list in the data frame
+    :param data: the data frame before the pre-process
+    :return: the data frame after the pre-process is completed
+    """
     count_of_term_deposits(data)
     print(data.isnull().sum())
     print(data.duplicated().sum())
@@ -320,6 +393,12 @@ def data_pre_process(numeric_columns, categorical_columns, data):
 
 
 def normalization(data, numerical_columns):
+    """
+    performs the normalization of the data. Min-max normalization is performed on the numerical columns of the data frame
+    :param data: the data frame on which normalization is performed
+    :param numerical_columns: the numerical columns in the data set
+    :return: the data frame after the normalization is performed
+    """
     min_max_scaler = MinMaxScaler(feature_range=(0, 1))
     data[numerical_columns] = min_max_scaler.fit_transform(data[numerical_columns])
     print(data[numerical_columns])
@@ -327,6 +406,11 @@ def normalization(data, numerical_columns):
 
 
 def encode_data(data):
+    """
+    This function encodes the categorical columns to numerical columns using label encoding technique
+    :param data: the data frame
+    :return: the data frame after encoding
+    """
     label_encoding = {
         "y": {"no": 0, "yes": 1},
         "poutcome": {"unknown": 0, "failure": 1, "success": 2, "other": 3},
@@ -345,6 +429,11 @@ def encode_data(data):
 
 
 def descriptive_stats_analysis(data):
+    """
+    This method performs descriptive analysis on the data frame
+    :param data: the data frame
+    :return: tuple of numerical columns, categorical columns and the data frame
+    """
     # Find all numerical columns
     numeric_columns = data.select_dtypes(include=numpy.number).columns
     print(numeric_columns)
@@ -374,6 +463,11 @@ def descriptive_stats_analysis(data):
 
 
 def count_of_term_deposits(data):
+    """
+    This method prints the counts of the target variable(term deposit taken and not taken percentages)
+    :param data: the data frame
+    :return: None
+    """
     counts = data.y.value_counts()
     print("Total term deposits opened:", counts["yes"])
     print("Total term deposits not opened:", counts["no"])
@@ -383,6 +477,12 @@ def count_of_term_deposits(data):
 
 
 def count_based_on_categorical_features(data, categorical_columns):
+    """
+    This method provides a graph showing count of each category in different categorical columns in the data set
+    :param data: the data frame
+    :param categorical_columns: the categorical columns
+    :return: None
+    """
     plt.figure(figsize=(15, 80), facecolor='white')
     plotnum = 1
     for cat in categorical_columns:
@@ -398,6 +498,12 @@ def count_based_on_categorical_features(data, categorical_columns):
 
 
 def kernel_denstiy_estimation(numeric_columns, data):
+    """
+    This method shows kernel density graphs for each numerical columns in the data frame
+    :param numeric_columns: the numerical columns in the data frame
+    :param data: the data frame
+    :return: None
+    """
     fig, axes = plt.subplots(7, 1, figsize=(8, 25))
     for index, column in enumerate(numeric_columns):
         # if index > 3:
@@ -406,6 +512,12 @@ def kernel_denstiy_estimation(numeric_columns, data):
 
 
 def target_variable_numerical_features_graph(numeric_columns, data):
+    """
+    This shows the target variable distribution with respect to numerical columns in the data set
+    :param numeric_columns: the numerical columns in the data set
+    :param data: the data frame
+    :return: None
+    """
     plt.figure(figsize=(20, 60))
     plotnumber = 1
     for feature in numeric_columns:
@@ -417,6 +529,14 @@ def target_variable_numerical_features_graph(numeric_columns, data):
 
 
 def print_outliers(upper_quart_outliers, lower_quart_outliers, data, column_name):
+    """
+    This method prints the outliers in the different numerical columns of the data frame
+    :param upper_quart_outliers: the upper quartile outlier in the data frame
+    :param lower_quart_outliers: the lower quartile outlier in the data frame
+    :param data: the data frame
+    :param column_name: the column name
+    :return: None
+    """
     upper_quart_outliers_age = numpy.where(data[column_name] >= upper_quart_outliers[column_name])
     lower_quart_outliers_age = numpy.where(data[column_name] <= lower_quart_outliers[column_name])
     print("Lower Quartile outliers for {} are {}:".format(column_name, lower_quart_outliers_age))
@@ -424,4 +544,7 @@ def print_outliers(upper_quart_outliers, lower_quart_outliers, data, column_name
 
 
 if __name__ == '__main__':
+    """
+    Flow begins here
+    """
     plain_data_process()

@@ -6,7 +6,7 @@ This project performs several machine learning classification techniques on the 
 
 Download and install the latest [python](https://www.python.org/downloads/)
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install mysql, numpy, pandas, seaborn, matplotlib and sklearn.
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install mysql, numpy, pandas, seaborn, matplotlib, imblearn and sklearn.
 
 ```bash
 pip install mysql
@@ -15,6 +15,7 @@ pip install pandas
 pip install seaborn
 pip install matplotlib
 pip install sklearn
+pip install imblearn
 ```
 
 ## Usage
