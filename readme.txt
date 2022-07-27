@@ -20,9 +20,18 @@ pip install imblearn
 
 ## Usage
 
+We strongly recommend the usage of jupiter notebook to load the script bank_marketing_data.py into jupyter notebook and run it.
+
+If Jupyter notebook is not available, Please use below commands to run the script
+
 After installing all the required python libraries, run the python script bank_marketing_data.py
 
 ```python
 python3 bank_marketing_data.py
 ```
+If above doesn't work, if alias is configured for python use the alias as shown below
+```python
+py bank_marketing_data.py
+```
+
 once the above command is run, data analysis starts, and the results are printed on the console which identifies and  provides the best classification technique for the bank marketing data
