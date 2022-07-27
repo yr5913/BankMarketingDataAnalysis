@@ -1,10 +1,14 @@
 # import mysql.connector
+from collections import Counter
+
 import numpy
 import pandas
 import seaborn
+from imblearn.over_sampling import SMOTE
 from matplotlib import pyplot as plt
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import plot_roc_curve
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
@@ -93,6 +97,17 @@ def plain_data_process():
     split_the_data(data, numeric_columns)
 
 
+def oversample_the_data(x, y):
+    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.7, random_state=42)
+    smote = SMOTE()
+    x_train_os, y_train_os = smote.fit_resample(x_train, y_train)
+    print("The number of Classes before fit {}".format(Counter(y_train)))
+    print("The number of Classes after fit {}".format(Counter(y_train_os)))
+    print('not_deposited :', y_train_os.value_counts()[0] / len(y_train_os) * 100, '%')
+    print('deposited: ', y_train_os.value_counts()[1] / len(y_train_os) * 100, '%')
+    return x_train_os, x_test, y_train_os, y_test
+
+
 def split_the_data(data, numeric_columns):
     features = [feat for feat in data.columns if feat != 'y']
 
@@ -100,16 +115,67 @@ def split_the_data(data, numeric_columns):
     y = data['y']  # target
 
     # Splitting data into train and test
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
-
+    # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+    x_train, x_test, y_train, y_test = oversample_the_data(x, y)
     # train and test datasets dimensions
     print(x_train.shape, x_test.shape)
+    models_list = []
 
-    train_decision_tree_classifier(x_train, x_test, y_train, y_test)
-    train_logistic_regression(x_train, x_test, y_train, y_test)
-    train_k_neighbors_classifier(x_train, x_test, y_train, y_test)
-    train_gaussianNB(x_train, x_test, y_train, y_test)
-    train_random_forest_classifier(x_train, x_test, y_train, y_test)
+    models_list.append(train_gaussianNB(x_train, x_test, y_train, y_test))
+    models_list.append(train_decision_tree_classifier(x_train, x_test, y_train, y_test))
+    models_list.append(train_random_forest_classifier(x_train, x_test, y_train, y_test))
+    models_list.append(train_k_neighbors_classifier(x_train, x_test, y_train, y_test))
+    models_list.append(train_logistic_regression(x_train, x_test, y_train, y_test))
+    models_list.append(train_stochastic_gradient_descent(x_train, x_test, y_train, y_test))
+
+    models = []
+    model_data_frame = pandas.DataFrame()
+    for i in models_list:
+        models.append(i[0])
+        dictionary = {}
+        dictionary['Model'] = i[4]
+        dictionary['Accuracy'] = i[1]
+        dictionary['Precision'] = i[2]
+        dictionary['Recall'] = i[3]
+        model_data_frame = model_data_frame.append(dictionary, ignore_index=True)
+    print(model_data_frame)
+
+    ax = plt.gca()
+    for i in models:
+        plot_roc_curve(i, x_test, y_test, ax=ax)
+    plt.show()
+
+    cm = seaborn.light_palette('seagreen', as_cmap=True)
+    s = model_data_frame.style.background_gradient(cmap=cm)
+    print(s)
+
+    plt.figure(figsize=(20, 5))
+    seaborn.set(style="whitegrid")
+    ax = seaborn.barplot(y='Accuracy', x='Model', data=model_data_frame)
+    plt.show()
+
+
+def train_stochastic_gradient_descent(x_train, x_test, y_train, y_test):
+    from sklearn.linear_model import SGDClassifier
+
+    sgd_model = SGDClassifier(loss='modified_huber', shuffle=True, random_state=101)
+    sgd_model.fit(x_train, y_train)
+    y_predicted_sgd = sgd_model.predict(x_test)
+    y_predicted_sgd
+    sgd_model.score(x_test, y_test)
+    sgd_accuracy = metrics.accuracy_score(y_test, y_predicted_sgd)
+    sgd_precision = metrics.precision_score(y_test, y_predicted_sgd)
+    sgd_recall = metrics.recall_score(y_test, y_predicted_sgd)
+    print("Accuracy of the StochasticGradient model:", metrics.accuracy_score(y_test, y_predicted_sgd))
+    print("Precision of the StochasticGradient model:", metrics.precision_score(y_test, y_predicted_sgd))
+    print("Recall of the StochasticGradient model:", metrics.recall_score(y_test, y_predicted_sgd))
+
+    cm = confusion_matrix(y_test, y_predicted_sgd)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    disp.plot()
+
+    plt.show()
+    return sgd_model, sgd_accuracy, sgd_precision, sgd_recall, "StochasticGradient"
 
 
 def train_decision_tree_classifier(x_train, x_test, y_train, y_test):
@@ -124,15 +190,16 @@ def train_decision_tree_classifier(x_train, x_test, y_train, y_test):
     dtc_accuracy = metrics.accuracy_score(y_test, y_predicted_deseciontree)
     dtc_precision = metrics.precision_score(y_test, y_predicted_deseciontree)
     dtc_recall = metrics.recall_score(y_test, y_predicted_deseciontree)
-    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_deseciontree))
-    print("Precision:", metrics.precision_score(y_test, y_predicted_deseciontree))
-    print("Recall:", metrics.recall_score(y_test, y_predicted_deseciontree))
+    print("Accuracy of the DescisionTree model:", metrics.accuracy_score(y_test, y_predicted_deseciontree))
+    print("Precision of the DescisionTree model:", metrics.precision_score(y_test, y_predicted_deseciontree))
+    print("Recall of the DescisionTree model:", metrics.recall_score(y_test, y_predicted_deseciontree))
 
     cm = confusion_matrix(y_test, y_predicted_deseciontree)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
 
     plt.show()
+    return deseciontree_model, dtc_accuracy, dtc_precision, dtc_recall, "DescisionTree"
 
 
 def train_logistic_regression(x_train, x_test, y_train, y_test):
@@ -146,15 +213,16 @@ def train_logistic_regression(x_train, x_test, y_train, y_test):
     lgr_accuracy = metrics.accuracy_score(y_test, y_predicted_lgr)
     lgr_precision = metrics.precision_score(y_test, y_predicted_lgr)
     lgr_recall = metrics.recall_score(y_test, y_predicted_lgr)
-    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_lgr))
-    print("Precision:", metrics.precision_score(y_test, y_predicted_lgr))
-    print("Recall:", metrics.recall_score(y_test, y_predicted_lgr))
+    print("Accuracy of the LogisticRegression model:", metrics.accuracy_score(y_test, y_predicted_lgr))
+    print("Precision of the LogisticRegression model:", metrics.precision_score(y_test, y_predicted_lgr))
+    print("Recall of the LogisticRegression model:", metrics.recall_score(y_test, y_predicted_lgr))
 
     cm = confusion_matrix(y_test, y_predicted_lgr)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
 
     plt.show()
+    return lgr_model, lgr_accuracy, lgr_precision, lgr_recall, "LogisticRegression"
 
 
 def train_k_neighbors_classifier(x_train, x_test, y_train, y_test):
@@ -168,15 +236,16 @@ def train_k_neighbors_classifier(x_train, x_test, y_train, y_test):
     knn_accuracy = metrics.accuracy_score(y_test, y_predicted_knn)
     knn_precision = metrics.precision_score(y_test, y_predicted_knn)
     knn_recall = metrics.recall_score(y_test, y_predicted_knn)
-    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_knn))
-    print("Precision:", metrics.precision_score(y_test, y_predicted_knn))
-    print("Recall:", metrics.recall_score(y_test, y_predicted_knn))
+    print("Accuracy of the KNeighborsClassifier model:", metrics.accuracy_score(y_test, y_predicted_knn))
+    print("Precision of the KNeighborsClassifier model:", metrics.precision_score(y_test, y_predicted_knn))
+    print("Recall of the KNeighborsClassifier model:", metrics.recall_score(y_test, y_predicted_knn))
 
     cm = confusion_matrix(y_test, y_predicted_knn)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
 
     plt.show()
+    return KNN_model, knn_accuracy, knn_precision, knn_recall, "KNeighborsClassifier"
 
 
 def train_gaussianNB(x_train, x_test, y_train, y_test):
@@ -190,15 +259,16 @@ def train_gaussianNB(x_train, x_test, y_train, y_test):
     gnb_accuracy = metrics.accuracy_score(y_test, y_predicted_gnb)
     gnb_precision = metrics.precision_score(y_test, y_predicted_gnb)
     gnb_recall = metrics.recall_score(y_test, y_predicted_gnb)
-    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_gnb))
-    print("Precision:", metrics.precision_score(y_test, y_predicted_gnb))
-    print("Recall:", metrics.recall_score(y_test, y_predicted_gnb))
+    print("Accuracy of the GaussianNB model:", metrics.accuracy_score(y_test, y_predicted_gnb))
+    print("Precision of the GaussianNB model:", metrics.precision_score(y_test, y_predicted_gnb))
+    print("Recall of the GaussianNB model:", metrics.recall_score(y_test, y_predicted_gnb))
 
     cm = confusion_matrix(y_test, y_predicted_gnb)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
 
     plt.show()
+    return gnb_model, gnb_accuracy, gnb_precision, gnb_recall, "GaussianNB"
 
 
 def train_random_forest_classifier(x_train, x_test, y_train, y_test):
@@ -212,15 +282,16 @@ def train_random_forest_classifier(x_train, x_test, y_train, y_test):
     rf_accuracy = metrics.accuracy_score(y_test, y_predicted_rf)
     rf_precision = metrics.precision_score(y_test, y_predicted_rf)
     rf_recall = metrics.recall_score(y_test, y_predicted_rf)
-    print("Accuracy:", metrics.accuracy_score(y_test, y_predicted_rf))
-    print("Precision:", metrics.precision_score(y_test, y_predicted_rf))
-    print("Recall:", metrics.recall_score(y_test, y_predicted_rf))
+    print("Accuracy of the RandomForestClassifier model:", metrics.accuracy_score(y_test, y_predicted_rf))
+    print("Precision of the RandomForestClassifier model:", metrics.precision_score(y_test, y_predicted_rf))
+    print("Recall of the RandomForestClassifier model:", metrics.recall_score(y_test, y_predicted_rf))
 
     cm = confusion_matrix(y_test, y_predicted_rf)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
 
     plt.show()
+    return rf_model, rf_accuracy, rf_precision, rf_recall, "RandomForestClassifier"
 
 
 def ouliers_in_data_frame(data):
@@ -244,6 +315,7 @@ def data_pre_process(numeric_columns, categorical_columns, data):
     data = encode_data(data)
     print(data)
     data = normalization(data, numeric_columns)
+    print(data)
     return data
 
 
@@ -289,15 +361,15 @@ def descriptive_stats_analysis(data):
     print("The outliers values in Upper Quartile are ", "\n", upper_quart_outliers)
     axis_index = 0
     fig, axes = plt.subplots(7, 1, figsize=(8, 25))
-    # for column in numeric_columns:
-    #     print_outliers(upper_quart_outliers, lower_quart_outliers, data, column)
-    #     f = data[[column]].boxplot(ax=axes[axis_index], vert=False)
-    #     axis_index += 1
-    # plt.show()
-    # seaborn.pairplot(data, hue='y', corner=True)
-    # target_variable_numerical_features_graph(numeric_columns, data)
-    # kernel_denstiy_estimation(numeric_columns, data)
-    # count_based_on_categorical_features(data, categorical_columns)
+    for column in numeric_columns:
+        print_outliers(upper_quart_outliers, lower_quart_outliers, data, column)
+        f = data[[column]].boxplot(ax=axes[axis_index], vert=False)
+        axis_index += 1
+    plt.show()
+    seaborn.pairplot(data, hue='y', corner=True)
+    target_variable_numerical_features_graph(numeric_columns, data)
+    kernel_denstiy_estimation(numeric_columns, data)
+    count_based_on_categorical_features(data, categorical_columns)
     return numeric_columns, categorical_columns, data
 
 
@@ -313,7 +385,6 @@ def count_of_term_deposits(data):
 def count_based_on_categorical_features(data, categorical_columns):
     plt.figure(figsize=(15, 80), facecolor='white')
     plotnum = 1
-    plotnum = 1
     for cat in categorical_columns:
         axis = plt.subplot(12, 3, plotnum)
         axis.tick_params(axis='x', rotation=90)
@@ -327,22 +398,11 @@ def count_based_on_categorical_features(data, categorical_columns):
 
 
 def kernel_denstiy_estimation(numeric_columns, data):
-    # fig, axes = plt.subplots(3, 1, figsize=(8, 25))
-    # for index, column in enumerate(numeric_columns):
-    #     if index == 3:
-    #         break
-    #     f = data[[column]].plot(kind='kde', ax=axes[index])
-    # plt.show()
-
     fig, axes = plt.subplots(7, 1, figsize=(8, 25))
     for index, column in enumerate(numeric_columns):
         # if index > 3:
         f = data[[column]].plot(kind='kde', ax=axes[index - 4])
     plt.show()
-
-
-def categorical_columns_plot(data, categorical_columns):
-    print("hi")
 
 
 def target_variable_numerical_features_graph(numeric_columns, data):
