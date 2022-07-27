@@ -20,7 +20,7 @@ pip install imblearn
 
 ## Usage
 
-We strongly recommend the usage of jupiter notebook to load the script bank_marketing_data.py into jupyter notebook and run it.
+We strongly recommend the usage of jupiter notebook to load the script bank_marketing_data.py into jupyter notebook and run it
 
 If Jupyter notebook is not available, Please use below commands to run the script
 
