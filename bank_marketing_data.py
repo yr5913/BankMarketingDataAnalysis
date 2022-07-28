@@ -1,4 +1,3 @@
-# import mysql.connector
 from collections import Counter
 
 import numpy
@@ -11,19 +10,9 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import plot_roc_curve
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+from sqlalchemy import create_engine
 
-config = {
-    'user': 'root',
-    'password': 'admin',
-    'host': 'localhost',
-    'database': 'project_csci620',
-    'raise_on_warnings': True
-}
-
-
-# def connect_to_db(config):
-#     cnx = mysql.connector.connect(**config)
-#     return cnx
+db_connect_string = 'mysql+pymysql://root:admin@localhost/project_csci620'
 
 
 def readfile(filename):
@@ -31,67 +20,82 @@ def readfile(filename):
     reads the file and returns the data frame
     :return: the data frame
     """
-    path = r"D:\YugiRIT\Courses\CSCI620-Intro To Big Data\Project\projStart\DataSet\bank (1)"
-    path = path + r"\\"
-    print(path + filename)
-    data = pandas.read_csv(path + filename,
+    # path = r"D:\Courses\CSCI620-Intro To Big Data\Project\projStart\DataSet\bank (1)"
+    # path = path + r"\\"
+    # print(path + filename)
+    data = pandas.read_csv(filename,
                            sep=";")
     return data
 
 
-def insert_rec_into_db(row, connection):
-    add_bank_data = "INSERT INTO bank_data_set " + \
-                    "( age, job, marital_status, education," + \
-                    "default_value, balance, housing, loan, contact, " + \
-                    "day, month, duration, campaign, pdays, " + \
-                    "previous, poutcome, outcome) " + \
-                    "VALUES ( %s, %s, %s, %s, " + \
-                    "%s, %s, %s, %s, %s, " + \
-                    "%s, %s, %s, %s, %s, " + \
-                    "%s, %s, %s) "
-    cur = connection.cursor()
-    default = False
-    if row["default"] == "yes":
-        default = True
-
-    housing = False
-    if row["housing"] == "yes":
-        housing = True
-
-    loan = False
-    if row["loan"] == "yes":
-        loan = True
-
-    y = False
-    if row["y"] == "yes":
-        y = True
-
-    type_parameters = (row["age"].item(), row["job"], row["marital"], row["education"],
-                       default, row["balance"].item(), housing, loan, row["contact"],
-                       row["day"].item(), row["month"], row["duration"].item(), row["campaign"].item(),
-                       row["pdays"].item(),
-                       row["previous"].item(), row["poutcome"], y)
-    cur.execute(add_bank_data, type_parameters)
+# def insert_rec_into_db(row, connection):
+#     add_bank_data = "INSERT INTO bank_data_set " + \
+#                     "( age, job, marital_status, education," + \
+#                     "default_value, balance, housing, loan, contact, " + \
+#                     "day, month, duration, campaign, pdays, " + \
+#                     "previous, poutcome, outcome) " + \
+#                     "VALUES ( %s, %s, %s, %s, " + \
+#                     "%s, %s, %s, %s, %s, " + \
+#                     "%s, %s, %s, %s, %s, " + \
+#                     "%s, %s, %s) "
+#     cur = connection.cursor()
+#     default = False
+#     if row["default"] == "yes":
+#         default = True
+#
+#     housing = False
+#     if row["housing"] == "yes":
+#         housing = True
+#
+#     loan = False
+#     if row["loan"] == "yes":
+#         loan = True
+#
+#     y = False
+#     if row["y"] == "yes":
+#         y = True
+#
+#     type_parameters = (row["age"].item(), row["job"], row["marital"], row["education"],
+#                        default, row["balance"].item(), housing, loan, row["contact"],
+#                        row["day"].item(), row["month"], row["duration"].item(), row["campaign"].item(),
+#                        row["pdays"].item(),
+#                        row["previous"].item(), row["poutcome"], y)
+#     cur.execute(add_bank_data, type_parameters)
 
 
 def main():
-    bank_data = readfile()
-    # print(bank_data)-
-    cnx = connect_to_db(config)
-    print(cnx.cmd_statistics())
-    print(bank_data.iloc[1])
-    print(len(bank_data))
-    for i in range(len(bank_data)):
-        insert_rec_into_db(bank_data.iloc[i], cnx)
-        if i % 1000 == 0:
-            cnx.commit()
-    cnx.commit()
-    cnx.close()
+    """
+    Asks user if to read data from CSV or from Database. Proceeds and process data and publish results
+    :return: None
+    """
+    inp = input("Do you want to read data from CSV or DB\n Enter 1 for CSV, 2 for DB :")
+    while inp != '1' and inp != '2':
+        print("Invalid input, Try Again")
+        inp = input("Do you want to read data from CSV or DB\n Enter 1 for CSV, 2 for DB :")
+    if inp == "1":
+        bank_data = readfile("bank-full.csv")
+    else:
+        bank_data = read_from_db()
+    data_process(bank_data)
 
 
-def plain_data_process():
+def read_from_db():
+    """
+    reads the data from database
+    :return: the dataframe
+    """
+    sql_engine = create_engine(db_connect_string, pool_recycle=3600)
+    db_connection = sql_engine.connect()
+    bank_data = pandas.read_sql("select * from bank_data", db_connection)
+    pandas.set_option('display.expand_frame_repr', False)
+    bank_data.drop(labels=['index'], axis=1, inplace=True)
+    db_connection.close()
+    return bank_data
+
+
+def data_process(data_frame):
     """process the data set and publishes the results"""
-    bank_data = readfile("bank-full.csv")
+    bank_data = data_frame
     print(bank_data.describe())
     numeric_columns, categorical_columns, data = descriptive_stats_analysis(bank_data)
     data = data_pre_process(numeric_columns, categorical_columns, bank_data)
@@ -547,4 +551,5 @@ if __name__ == '__main__':
     """
     Flow begins here
     """
-    plain_data_process()
+    # plain_data_process()
+    main()
