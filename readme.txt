@@ -37,7 +37,8 @@ py bank_marketing_data.py
 
 Once the script execution starts, 2 options are given to user
 1) Option 1, to read data from CSV
-    for this option the data set file bank-full.csv should be present in the same path as the script path
+    for this option the data set file bank.csv should be present in the same path as the script path
+    if script wants to be run on full data set, please place bank-full.csv in the same path as script path and change the file name in line 16 of the script
 2) Option 2, to read data from DB
     for this option mysql database should be up and running and connection string should be provided in line 15 of the script
     and also data should be present in the database table "bank_data"(for this script store_data_to_db.py can be run)

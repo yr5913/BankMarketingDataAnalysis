@@ -13,6 +13,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sqlalchemy import create_engine
 
 db_connect_string = 'mysql+pymysql://root:admin@localhost/project_csci620'
+data_set_file_name = "bank.csv"
 
 
 def readfile(filename):
@@ -73,7 +74,7 @@ def main():
         print("Invalid input, Try Again")
         inp = input("Do you want to read data from CSV or DB\n Enter 1 for CSV, 2 for DB :")
     if inp == "1":
-        bank_data = readfile("bank-full.csv")
+        bank_data = readfile(data_set_file_name)
     else:
         bank_data = read_from_db()
     data_process(bank_data)
