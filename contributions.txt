@@ -1,0 +1,37 @@
+This file indicates contributions of individual in the project
+===============Shravani Athkuri======================
+1) MYSQL database setup
+2) Reading data from excel and storing it in db
+3) Reading data from database into application for analysis
+4) Worked on descriptive statistics for categorical columns and listed different unique categories in each column
+5) Plotted Kernel density graph for numerical columns to visualize the more dense and sparse regions in each column
+6) Worked on scarceness and correlation plots for numerical columns, plotted heatmap to visualize the correlation between columns
+7) Worked on data encoding using label encoding and converted categorical columns to numerical values which helped for better training of models
+8) Performed Oversampling which balanced the data
+9) Trained the classification models Decision Tree and Random Forest Classifier models and published the results
+10) Collated the results of different classification modela and plotted bar graphs for better visualize the performance metrics of all models trained
+11) Completed the Status and Future Work sections in the project report
+
+===============Anvesh Sai Vemuri==========================
+1) Performed descriptive statistics on the data for each numerical value listing the mean, count and sum of each columns
+2) Used Inter Quartile Range method and calculated the Lower Quartile Outliers
+3) Plotted graphs to visualize the counts of each category in all categorical columns of the data set
+4) Performed Normalization of numerical columns of the data set using min max normalization
+5) Trained the classification models Logistic Regression and Stochastic Gradient Descent and published the results
+6) Completed the project poster
+7) Worked on legal and ethical sections of the report
+
+================Subba Reddy Karri=========================
+1) Used Inter Quartile Range method and calculated the Upper Quartile Outliers
+2) Plotted graphs to visualize the target column distribution with respect to each numerical column
+3) Worked on data cleanup to find the missing values in the data
+4) Trained the classification models Gaussian NB and K Neighbors models and published the results
+5) Completed the contributions text to list all the contributions of team members
+6) Worked on the project report and completed the analysis and design and implementation sections
+7) Gathered all the important screenshots and the data required for the report and completed the project report
+
+================Yugesh Reganti=============================
+1) Selected the data set for the project
+2) Worked on database setup and storing data into database
+3) Plotted Box and Whisker plots to visualize the outliers in the numerical columns
+
